@@ -1,7 +1,6 @@
 import assert from 'assert';
 import settingsBill from '../settings-bill.js';
 
-
 describe("Warning and Critical level", function(){
 
     it("It should be able to return 'warning' when warning level is reached" , function(){
@@ -10,7 +9,6 @@ describe("Warning and Critical level", function(){
         bill.setSmsCost(1)
         bill.setWarningLevel(15)
         bill.setCriticalLevel(20)
-
 
         bill.makeCall();
         bill.makeCall();
