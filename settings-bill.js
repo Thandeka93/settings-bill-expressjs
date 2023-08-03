@@ -1,47 +1,61 @@
-// module.exports = function SettingsBill() {
-    export default function SettingsBill() {
+import moment from "moment"
+export default function settingsBill(){
+    
+    var smsCost = 0
+    var callCost = 0
+    var warningLevel = 0
+    var criticalLevel = 0
+    var actionList = []
+    var thecallCost = 0;
+    var theSmsCost = 0;
+    var theWarningLevel = 0;
+    var theCriticalLevel = 0;
+    var theTotalCallCost = 0
+    var theTotalSmsCost = 0;
+    var theTotalCost = 0;
 
-    let smsCost;
-    let callCost;
-    let warningLevel;
-    let criticalLevel; 
-
-    let actionList = [];
-
-    function setSettings (settings) {
-        smsCost = Number(settings.smsCost);
-        callCost = Number(settings.callCost);
-        warningLevel = settings.warningLevel;
-        criticalLevel = settings.criticalLevel;
+    function setCosts(amount){
+        smsCost = Number(amount.smsCost);
+        callCost = Number(amount.callCost);
+        warningLevel = (amount.warningLevel);
+        criticalLevel = (amount.criticalLevel)
+        
     }
-
-    function getSettings
-    () {
-        return {
+    function getCosts(){
+        return{
             smsCost,
             callCost,
             warningLevel,
-            criticalLevel
+            criticalLevel,
         }
     }
+    function checkbox(action) {
 
-    function recordAction(action) {
-
-        let cost = 0;
+        let cost = 0 
+        
         if (action === 'sms'){
-            cost = smsCost;
+        cost = smsCost;
         }
         else if (action === 'call'){
-            cost = callCost;
+        cost = callCost;
         }
-
+        if (cost > 0)
         actionList.push({
             type: action,
             cost,
             timestamp: new Date()
-        });
+        })
     }
+    function clock(){
+        let timeList = []
+        for (let i = 0; i < actionList.length; i++) {
+             time = moment(actionList[i].timestamp).fromNow() 
+             timeList.push(time)
+             return timeList
+        }
 
+    }
+   
     function actions(){
         return actionList;
     }
@@ -61,9 +75,8 @@
 
         return filteredActions;
 
-        // return actionList.filter((action) => action.type === type);
     }
-
+    
     function getTotal(type) {
         let total = 0;
         // loop through all the entries in the action list 
@@ -77,12 +90,6 @@
         }
         return total;
 
-        // the short way using reduce and arrow functions
-
-        // return actionList.reduce((total, action) => { 
-        //     let val = action.type === type ? action.cost : 0;
-        //     return total + val;
-        // }, 0);
     }
 
     function grandTotal() {
@@ -90,12 +97,12 @@
     }
 
     function totals() {
-        let smsTotal = getTotal('sms')
-        let callTotal = getTotal('call')
+        let smsTotal = getTotal('sms').toFixed(2)
+        let callTotal = getTotal('call').toFixed(2)
         return {
             smsTotal,
             callTotal,
-            grandTotal : grandTotal()
+            grandTotal : grandTotal().toFixed(2)
         }
     }
 
@@ -111,14 +118,88 @@
         const total = grandTotal();
         return total >= criticalLevel;
     }
+    function setCallCost(callCost){
+        thecallCost = callCost;
+    }
+    function getCallCost(){
+        return thecallCost;
+    }
+    function setSmsCost(SmsCost){
+        theSmsCost = SmsCost;
+    }
+    function getSmsCost(){
+        return theSmsCost;
+    }
+    function setWarningLevel(wLevel){
+        theWarningLevel = wLevel;
+    }
+    function getWarningLevel(){
+        return theWarningLevel
+    }
+    function setCriticalLevel(cLevel){
+        theCriticalLevel = cLevel;
+    }
+    function getCriticalLevel(){
+        return theCriticalLevel
+    }
+    function makeCall(){
+        if(!criticalLevelReached()){
+        theTotalCallCost += thecallCost
+        }
+    }
+    function sendSms(){
+        if (!criticalLevelReached()){
+            theTotalSmsCost += theSmsCost
+        }
+        
+    }
+    function getTotalCallCost(){
+        return theTotalCallCost
+    }
+    function getTotalSmsCost(){
+        return theTotalSmsCost
+    }
+    function getTotalCost(){
+         theTotalCost = theTotalSmsCost + theTotalCallCost
+         return theTotalCost
+    }
+    function criticalLevelReached(){
+        getTotalCost() >= getCriticalLevel()
+    }
+    function totalClassName(){
+        if(getTotalCost() >= getCriticalLevel()){
+            return "critical"
+        }
 
-    return {
-        setSettings,
-        getSettings,
-        recordAction,
-        actions,
+        if(getTotalCost() >= getWarningLevel())
+            return "warning"
+    }
+
+    return{
+        clock,
+        setCosts,
+        getCosts,
+        checkbox,
+        getTotal,
         actionsFor,
+        actions,
+        grandTotal,
         totals,
+        setCallCost,
+        getCallCost,
+        setSmsCost,
+        getSmsCost,
+        setWarningLevel,
+        getWarningLevel,
+        setCriticalLevel,
+        getCriticalLevel,
+        makeCall,
+        sendSms,
+        getTotalCost,
+        getTotalCallCost,
+        getTotalSmsCost,
+        totalClassName,
+        criticalLevelReached,
         hasReachedWarningLevel,
         hasReachedCriticalLevel
     }

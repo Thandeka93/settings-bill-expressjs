@@ -1,8 +1,5 @@
-// const assert = require('assert');
 import assert from "assert";
 import SettingsBill from "../settings-bill.js";
-
-// const SettingsBill = require('../settings-bill');
 
 describe('settings-bill', function(){
 
@@ -27,7 +24,6 @@ describe('settings-bill', function(){
             warningLevel: 30,
             criticalLevel: 40
         }, settingsBill.getSettings())
-
 
     });
 

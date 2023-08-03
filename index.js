@@ -1,123 +1,88 @@
 import express from 'express';
-import { engine } from "express-handlebars";
+import moment from 'moment';
+import { engine } from 'express-handlebars';
 import bodyParser from 'body-parser';
-import SettingsBill from "./settings-bill.js";
+import settingsBill from './settings-bill.js'
 
-const app = express();
-const settingsBill = SettingsBill();
+var app = express();
+var settingBill = settingsBill()
 
-app.engine("handlebars", engine());
-app.set("view engine", "handlebars");
-app.set("views", "./views");
+app.use(express.static(('public')))
 
-app.use(express.static('public'));
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', './views');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-app.get('/', function (req, res) {
-    res.render('index', {
-        settings: settingsBill.getSettings(),
-        totals: settingsBill.totals()
-    });
-});
+// Call methods to check if warning and critical levels are reached
+function update(req, res, next) {
+  const hasReachedWarningLevel = settingBill.hasReachedWarningLevel();
+  const hasReachedCriticalLevel = settingBill.hasReachedCriticalLevel();
+  res.locals.hasReachedWarningLevel = hasReachedWarningLevel;
+  res.locals.hasReachedCriticalLevel = hasReachedCriticalLevel;
+  //Move to the next route handler
+  next();
+}
 
-app.post('/settings', function (req, res) {
 
+app.get("/", update, function (req, res) {
+    res.render("index", {
+        amount: settingBill.getCosts(),
+        totals: settingBill.totals(),
+    })
+})
 
-    settingsBill.setSettings({
+app.post("/settings", function (req, res) {
+
+    settingBill.setCosts({
         callCost: req.body.callCost,
         smsCost: req.body.smsCost,
         warningLevel: req.body.warningLevel,
-        criticalLevel: req.body.criticalLevel
+        criticalLevel: req.body.criticalLevel,
     });
 
-    // console.log(settingsBill.getSettings());
+    res.redirect("/")
 
-    res.redirect('/');
-});
+})
 
-app.post('/action', function (req, res) {
-    settingsBill.recordAction(req.body.actionType)
-    res.redirect('/');
+app.post("/action", function (req, res) {
+    const hasReachedCriticalLevel = settingBill.hasReachedCriticalLevel()
+    if(!hasReachedCriticalLevel)
+    settingBill.checkbox(req.body.actionType)
+    res.redirect("/")
+})
 
-});
+app.get("/actions", function (req, res) {
 
-app.get('/actions', function (req, res) {
-    res.render('actions', {actions: settingsBill.actions()});
+    res.render('actions', {
+        actions: settingBill.actions(),
+    })
 
-});
+})
 
-app.get('/actions/:actionType', function (req, res) {
-    const actionType = req.params.type;
-    res.render('actions', {actions: settingsBill.actionsFor(actionType)});
+app.get("/actions/:actionType", function (req, res) {
+    const actionType = req.params.actionType
+    const actionedList = settingBill.actionsFor(actionType)
 
-});
+    const relativeTime = actionedList.forEach((list) => {
+        
+        list.timestamp = moment().startOf('hour').fromNow()
 
-const PORT = process.env.PORT || 3011;
+    })
 
-app.listen(PORT, function () {
-    console.log("App started")
-});
+    res.render('actions', {
+        actions: settingBill.actionsFor(actionType),
+        relativeTime
+    })
+})
 
-// import express from "express";
-// import { engine } from "express-handlebars";
-// import bodyParser from "body-parser";
-// import SettingsBill from "./settings-bill.js";
+const PORT = process.env.PORT || 3011
 
-// const app = express();
-// const settingsBill = new SettingsBill();
+app.listen(PORT, () => {
+    console.log("App started at port:", PORT)
+}) 
 
-// //setup template handlebars as the template engine
-// // app.engine('handlebars', exphbs({defaultLayout: 'main'}));
-// // app.set('view engine', 'handlebars');
-
-// app.engine("handlebars", engine());
-// app.set("view engine", "handlebars");
-// app.set("views", "./views");
-
-// app.use(express.static('public'));
-
-// app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(bodyParser.json());
-
-// app.get('/', function (req, res) {
-//   res.render('index', {
-//     settings: settingsBill.getSettings(),
-//     totals: settingsBill.totals()
-//   });
-// });
-
-// app.post('/settings', function (req, res) {
-//   settingsBill.setSettings({
-//     callCost: req.body.callCost,
-//     smsCost: req.body.smsCost,
-//     warningLevel: req.body.warningLevel,
-//     criticalLevel: req.body.criticalLevel
-//   });
-
-//   res.redirect('/');
-// });
-
-// app.post('/action', function (req, res) {
-//   settingsBill.recordAction(req.body.actionType)
-//   res.redirect('/');
-// });
-
-// app.get('/actions', function (req, res) {
-//   res.render('actions', { actions: settingsBill.actions() });
-// });
-
-// app.get('/actions/:actionType', function (req, res) {
-//   const actionType = req.params.actionType;
-//   res.render('actions', { actions: settingsBill.actionsFor(actionType) });
-// });
-
-
-// const PORT = process.env.PORT || 3011;
-
-// app.listen(PORT, function () {
-//   console.log("App started")
-// });
