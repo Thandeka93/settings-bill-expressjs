@@ -1,99 +1,49 @@
-import assert from "assert";
-import SettingsBill from "../settings-bill.js";
+import assert from 'assert';
+import settingsBill from '../settings-bill.js';
 
-describe('settings-bill', function(){
 
-    const settingsBill = SettingsBill();
+describe("Warning and Critical level", function(){
 
-    it('should be able to record calls', function(){
-        settingsBill.recordAction('call');
-        assert.equal(1, settingsBill.actionsFor('call').length);
-    });
+    it("It should be able to return 'warning' when warning level is reached" , function(){
+        let bill = settingsBill();
+        bill.setCallCost(3)
+        bill.setSmsCost(1)
+        bill.setWarningLevel(15)
+        bill.setCriticalLevel(20)
 
-    it('should be able to set the settings', function(){
-        settingsBill.setSettings({
-            smsCost: 2.35,
-            callCost: 3.35,
-            warningLevel: 30,
-            criticalLevel: 40
-        });
 
-        assert.deepEqual({
-            smsCost: 2.35,
-            callCost: 3.35,
-            warningLevel: 30,
-            criticalLevel: 40
-        }, settingsBill.getSettings())
+        bill.makeCall();
+        bill.makeCall();
+        bill.makeCall();
+        bill.makeCall();
+        bill.sendSms();
+        bill.sendSms();
+        bill.sendSms();
 
-    });
+        assert.equal("warning", bill.totalClassName())
 
-    it('should calculate the right totals', function(){
-        const settingsBill = SettingsBill();
-        settingsBill.setSettings({
-            smsCost: 2.35,
-            callCost: 3.35,
-            warningLevel: 30,
-            criticalLevel: 40
-        });
+    })
 
-        settingsBill.recordAction('call');
-        settingsBill.recordAction('sms');
+    it("It should be able to return 'critical' when critical level is reached" , function(){
+        let bill = settingsBill();
+        bill.setCallCost(4.50)
+        bill.setSmsCost(1.50)
+        bill.setWarningLevel(10)
+        bill.setCriticalLevel(25)
 
-        assert.equal(2.35, settingsBill.totals().smsTotal);
-        assert.equal(3.35, settingsBill.totals().callTotal);
-        assert.equal(5.70, settingsBill.totals().grandTotal);
 
-    });
+        bill.makeCall();
+        bill.makeCall();
+        bill.makeCall();
+        bill.makeCall();
+        bill.sendSms();
+        bill.sendSms();
+        bill.sendSms();
+        bill.sendSms();
+        bill.sendSms();
 
-    it('should calculate the right totals for multiple actions', function(){
-        const settingsBill = SettingsBill();
-        settingsBill.setSettings({
-            smsCost: 2.35,
-            callCost: 3.35,
-            warningLevel: 30,
-            criticalLevel: 40
-        });
+        assert.equal(25.5,bill.getTotalCost())
+        assert.equal("critical", bill.totalClassName())
 
-        settingsBill.recordAction('call');
-        settingsBill.recordAction('call');
-        settingsBill.recordAction('sms');
-        settingsBill.recordAction('sms');
-
-        assert.equal(4.70, settingsBill.totals().smsTotal);
-        assert.equal(6.70, settingsBill.totals().callTotal);
-        assert.equal(11.40, settingsBill.totals().grandTotal);
-
-    });
-
-    it('should know when warning level reached', function(){
-        const settingsBill = SettingsBill();
-        settingsBill.setSettings({
-            smsCost: 2.50,
-            callCost: 5.00,
-            warningLevel: 5,
-            criticalLevel: 10
-        });
-
-        settingsBill.recordAction('call');
-        settingsBill.recordAction('sms');
-
-        assert.equal(true, settingsBill.hasReachedWarningLevel());
-    });
-
-    it('should know when critical level reached', function(){
-        const settingsBill = SettingsBill();
-        settingsBill.setSettings({
-            smsCost: 2.50,
-            callCost: 5.00,
-            warningLevel: 5,
-            criticalLevel: 10
-        });
-
-        settingsBill.recordAction('call');
-        settingsBill.recordAction('call');
-        settingsBill.recordAction('sms');
-
-        assert.equal(true, settingsBill.hasReachedCriticalLevel());
-
-    });
-});
+    })
+})
