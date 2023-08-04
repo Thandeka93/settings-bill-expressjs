@@ -1,86 +1,90 @@
-import assert from 'assert';
-import settingsBill from '../settings-bill.js';
+import assert from "assert";
+import SettingsBill from "../settings-bill.js";
 
-describe("Warning and Critical level", function(){
+describe("Settings-bill", function () {
 
-    it("It should be able to return 'warning' when warning level is reached" , function(){
-        let bill = settingsBill();
-        bill.setCallCost(3)
-        bill.setSmsCost(1)
-        bill.setWarningLevel(15)
-        bill.setCriticalLevel(20)
-
-        bill.makeCall();
-        bill.makeCall();
-        bill.makeCall();
-        bill.makeCall();
-        bill.sendSms();
-        bill.sendSms();
-        bill.sendSms();
-
-        assert.equal("warning", bill.totalClassName())
-
-    })
-
-    it("It should be able to return 'critical' when critical level is reached" , function(){
-        let bill = settingsBill();
-        bill.setCallCost(4.50)
-        bill.setSmsCost(1.50)
-        bill.setWarningLevel(10)
-        bill.setCriticalLevel(25)
+    const settingsBill = SettingsBill();
 
 
-        bill.makeCall();
-        bill.makeCall();
-        bill.makeCall();
-        bill.makeCall();
-        bill.sendSms();
-        bill.sendSms();
-        bill.sendSms();
-        bill.sendSms();
-        bill.sendSms();
+    it("should return call cost", function () {
 
-        assert.equal(25.5,bill.getTotalCost())
-        assert.equal("critical", bill.totalClassName())
+        settingsBill.setSettings({
+            "smsCost": 3,
+            "callCost": 4,
+            "warningLevel": 20,
+            "criticalLevel": 30
+        });
 
-    })
-})
+        assert.equal(4, settingsBill.getSettings().callCost)
+    }
+    );
 
-describe("The totals function", function(){
-    it("It should be able to return total for calls at R2.50 each" , function(){
-        let bill = settingsBill();
-        bill.setCallCost(2.50)
-        bill.setSmsCost(0.70)
+    it("should return sms cost", function () {
 
-
-        bill.makeCall();
-        bill.makeCall();
-        bill.makeCall();
-        bill.makeCall();
-
-        assert.equal(10.0, bill.getTotalCost())
-        assert.equal(10.0, bill.getTotalCallCost())
-        assert.equal(0.00, bill.getTotalSmsCost())
-
-    })
-
-    
-    it("It should be able to return total for sms at R 0.65 each" , function(){
-        let bill = settingsBill();
-        bill.setCallCost(0)
-        bill.setSmsCost(0.65)
+        settingsBill.setSettings({
+            "smsCost": 3,
+            "callCost": 4,
+            "warningLevel": 20,
+            "criticalLevel": 30
+        });
+        assert.equal(3, settingsBill.getSettings().smsCost)
+    }
+    );
 
 
-        bill.makeCall();
-        bill.makeCall();
-        bill.makeCall();
-        bill.sendSms();
-        bill.sendSms();
+    it("should return warning level", function () {
+        settingsBill.setSettings({
+            "smsCost": 3,
+            "callCost": 4,
+            "warningLevel": 20,
+            "criticalLevel": 30
+        });
 
-        assert.equal(1.30, bill.getTotalCost())
-        assert.equal(0.00, bill.getTotalCallCost())
-        assert.equal(1.30, bill.getTotalSmsCost())
+        assert.equal(20, settingsBill.getSettings().warningLevel)
+    }
+    );
 
-    });
-})
+    it("should return critical level", function () {
 
+        settingsBill.setSettings({
+            "smsCost": 3,
+            "callCost": 4,
+            "warningLevel": 20,
+            "criticalLevel": 30
+        });
+        assert.equal(30, settingsBill.getSettings().criticalLevel)
+    }
+    );
+
+    it("should return total call cost", function () {
+
+        settingsBill.recordAction("call");
+        settingsBill.recordAction("call");
+        settingsBill.recordAction("call");
+
+        assert.equal(12, settingsBill.totals().callTotal)
+    }
+
+    );
+
+
+    it("should return total sms cost", function () {
+
+        settingsBill.recordAction("sms");
+        settingsBill.recordAction("sms");
+        settingsBill.recordAction("sms");
+
+        assert.equal(9, settingsBill.totals().smsTotal)
+    }
+
+    );
+
+    it("should return grand total", function () {
+
+        assert.equal(21, settingsBill.totals().grandTotal)
+    }
+
+    );
+
+
+});
