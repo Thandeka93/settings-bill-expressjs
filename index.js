@@ -70,7 +70,7 @@ app.get("/actions/:actionType", function (req, res) {
 
     const relativeTime = actionedList.forEach((list) => {
         
-        list.timestamp = moment().startOf('hour').fromNow()
+        list.timestamp = moment().startOf('seconds').fromNow()
 
     })
 

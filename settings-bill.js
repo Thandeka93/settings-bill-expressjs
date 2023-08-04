@@ -14,11 +14,11 @@ export default function settingsBill(){
     var theTotalSmsCost = 0;
     var theTotalCost = 0;
 
-    function setCosts(amount){
-        smsCost = Number(amount.smsCost);
-        callCost = Number(amount.callCost);
-        warningLevel = (amount.warningLevel);
-        criticalLevel = (amount.criticalLevel)
+    function setCosts(setting){
+        smsCost = Number(setting.smsCost);
+        callCost = Number(setting.callCost);
+        warningLevel = (setting.warningLevel);
+        criticalLevel = (setting.criticalLevel)
         
     }
     function getCosts(){
