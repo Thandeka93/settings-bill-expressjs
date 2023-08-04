@@ -18,25 +18,22 @@ app.use(bodyParser.json())
 
 
 const settingsBill = SettingsBill();
-const settingsBill2 = SettingsBill();
+
 
 app.get('/', function (req, res) {
+    const totals = settingsBill.totals();
 
     res.render('index', {
         settings: settingsBill.getSettings(),
-        totals: settingsBill.totals(),
+        totals: totals,
         warningLevel: settingsBill.hasReachedWarningLevel(),
         criticalLevel: settingsBill.hasReachedCriticalLevel(),
-        roundedSms: settingsBill.totals().smsTotal.toFixed(2),
-        roundedCall: settingsBill.totals().callTotal.toFixed(2),
-        roundedTotal: settingsBill.totals().grandTotal.toFixed(2),
-
-
-
+        roundedSms: totals.smsTotal.toFixed(2),
+        roundedCall: totals.callTotal.toFixed(2),
+        roundedTotal: totals.grandTotal.toFixed(2)
     });
-
-
 });
+
 
 app.post('/settings', function (req, res) {
 
@@ -51,16 +48,6 @@ app.post('/settings', function (req, res) {
     );
 
 
-    settingsBill2.setSettings({
-
-        callCost: req.body.callCost,
-        smsCost: req.body.smsCost,
-        warningLevel: req.body.warningLevel,
-        criticalLevel: req.body.criticalLevel
-    }
-
-    );
-
     res.redirect('/');
 
 });
@@ -69,72 +56,36 @@ app.post('/action', function (req, res) {
 
 
     settingsBill.recordAction(req.body.actionType);
-    settingsBill2.recordAction(req.body.actionType);
+    
 
     res.redirect('/');
 
 });
 
-app.get('/actions', function (req, res) {
+app.get('/actions', (req, res) => {
+    const actionsList = settingsBill.actions();
 
-    var actionsList = settingsBill.actions();
-
-
-    const holder = settingsBill2.actions();
-
-    var staticTime = [];
-
-    for (let i = 0; i < holder.length; ++i) {
-
-
-        staticTime.push(holder[i].time);
-
-    }
-
-    for (let i = 0; i < actionsList.length; ++i) {
-
-        //  var result= actionsList[i].time;
-
-        actionsList[i].time = moment(staticTime[i]).fromNow();
-
-
-    }
+    actionsList.forEach((action) => {
+        action.time = moment(action.time).fromNow(); 
+    });
 
     res.render('actions', {
         actions: actionsList
-
     });
-
-
 });
 
 app.get('/actions/:actionType', function (req, res) {
-
     const actionType = req.params.actionType;
 
-    var actionsTypes = settingsBill.actionsFor(actionType);
+    const actionsTypes = settingsBill.actionsFor(actionType);
 
-    const holder = settingsBill2.actionsFor(actionType);
-    var staticTime = [];
-
-    for (let i = 0; i < holder.length; ++i) {
-
-
-        staticTime.push(holder[i].time);
-
-    }
-
-    for (let i = 0; i < actionsTypes.length; ++i) {
-
-        actionsTypes[i].time = moment(staticTime[i]).fromNow();
-
-    }
+    actionsTypes.forEach((action) => {
+        action.time = moment(action.time).fromNow(); 
+    });
 
     res.render('actions', {
         actions: actionsTypes
-
     });
-
 });
 
 
